@@ -48,5 +48,46 @@ pip install -r requirements.txt
 
  # Inferencing with GRPC
  ```python
- 
+import grpc
+import numpy as np
+import nsvision as nv
+import tensorflow as tf
+from tensorflow_serving.apis import predict_pb2
+from tensorflow_serving.apis import prediction_service_pb2_grpc
+
+label = ['cat', 'dog']
+GRPC_MAX_RECEIVE_MESSAGE_LENGTH = 4096 * 4096 * 3
+channel = grpc.insecure_channel('localhost:8500', options=[('grpc.max_receive_message_length', GRPC_MAX_RECEIVE_MESSAGE_LENGTH)])
+stub = prediction_service_pb2_grpc.PredictionServiceStub(channel)
+grpc_request = predict_pb2.PredictRequest()
+grpc_request.model_spec.name = 'cat_dog_classifier'
+grpc_request.model_spec.signature_name = 'serving_default'
+
+image = nv.imread('golden-retriever-royalty-free-image-506756303-1560962726.jpg',resize=(150,150),normalize=True)
+image = nv.expand_dims(image,axis=0)
+grpc_request.inputs['conv2d_input'].CopyFrom(tf.make_tensor_proto(image, shape=image.shape))
+result = stub.Predict(grpc_request,10)
+result = int(result.outputs['dense_1'].float_val[0])
+print(label[result])
+#This printed 'dog' on my console
+ ```
+
+ # Inferencing with REST API
+ ```python
+import json
+import requests
+import nsvision as nv
+
+label = ['cat','dog']
+image = nv.imread('cat.2033.jpg',resize=(150,150),normalize=True)
+image = nv.expand_dims(image,axis=0)
+data = json.dumps({ 
+    "instances": image.tolist()
+})
+headers = {"content-type": "application/json"}
+
+response = requests.post('http://localhost:8501/v1/models/cat_dog_classifier:predict', data=data, headers=headers)
+result = int(response.json()['predictions'][0][0])
+print(label[result])
+#This printed 'cat' on my console
  ```
