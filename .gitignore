@@ -6,6 +6,11 @@ __pycache__/
 # C extensions
 *.so
 
+#model weights
+*.h5
+cat_dog_classifier/
+
+
 # Distribution / packaging
 .Python
 build/
