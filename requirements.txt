@@ -2,4 +2,4 @@ nsvision==0.0.9
 tensorflow==2.4.0
 matplotlib==3.2.1
 tensorflow_serving_api==2.2.0
-jupyterlab==2.1.4
+jupyterlab==2.2.10
